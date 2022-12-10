@@ -1,0 +1,179 @@
+version: '3'
+services:
+  # db:
+  #   restart: always
+  #   image: postgres:14-alpine
+  #   shm_size: 256mb
+  #   networks:
+  #     - internal_network
+  #   healthcheck:
+  #     test: ['CMD', 'pg_isready', '-U', 'postgres']
+  #   volumes:
+  #     - ./postgres14:/var/lib/postgresql/data
+  #   environment:
+  #     - 'POSTGRES_HOST_AUTH_METHOD=trust'
+
+  redis:
+    restart: always
+    image: redis:7-alpine
+    networks:
+      - internal_network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+    volumes:
+      - redis:/data
+
+  # es:
+  #   restart: always
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.17.4
+  #   environment:
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Des.enforce.bootstrap.checks=true"
+  #     - "xpack.license.self_generated.type=basic"
+  #     - "xpack.security.enabled=false"
+  #     - "xpack.watcher.enabled=false"
+  #     - "xpack.graph.enabled=false"
+  #     - "xpack.ml.enabled=false"
+  #     - "bootstrap.memory_lock=true"
+  #     - "cluster.name=es-mastodon"
+  #     - "discovery.type=single-node"
+  #     - "thread_pool.write.queue_size=1000"
+  #   networks:
+  #      - external_network
+  #      - internal_network
+  #   healthcheck:
+  #      test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1"]
+  #   volumes:
+  #      - ./elasticsearch:/usr/share/elasticsearch/data
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #     nofile:
+  #       soft: 65536
+  #       hard: 65536
+  #   ports:
+  #     - '127.0.0.1:9200:9200'
+
+  web:
+    image: {{ mastodon_image }}
+    restart: always
+    env_file: /data/mastodon/config
+    command: bash -c "rm -f /mastodon/tmp/pids/server.pid; bundle exec rails s -p 3000"
+    networks:
+      - external_network
+      - internal_network
+      - {{ mastodon_network }}
+    healthcheck:
+      # prettier-ignore
+      test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:3000/health || exit 1']
+    # ports:
+    #   - '127.0.0.1:3000:3000'
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "{{ mastodon_network }}"
+      traefik.http.routers.mastodon-web.rule: "Host(`{{ mastodon_web_domain }}`)"
+      traefik.http.routers.mastodon-web.entrypoints: "websecure"
+      traefik.http.routers.mastodon-web.tls.certresolver: "letsencrypt"
+      traefik.http.services.mastodon-web.loadbalancer.server.port: "3000"
+    extra_hosts:
+      # Expose host IP to container by putting host.docker.internal into /etc/hosts
+      host.docker.internal: host-gateway
+    depends_on:
+      # - db
+      - redis
+      # - es
+    volumes:
+      # - ./public/system:/mastodon/public/system
+      - system:/mastodon/public/system
+
+  streaming:
+    image: {{ mastodon_image }}
+    restart: always
+    env_file: /data/mastodon/config
+    command: node ./streaming
+    networks:
+      - external_network
+      - internal_network
+      - {{ mastodon_network }}
+    healthcheck:
+      # prettier-ignore
+      test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:4000/api/v1/streaming/health || exit 1']
+    ports:
+      - '127.0.0.1:4000:4000'
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "{{ mastodon_network }}"
+      traefik.http.routers.mastodon-streaming.rule: "Host(`{{ mastodon_web_domain }}`) && PathPrefix(`/api/v1/streaming`)"
+      traefik.http.routers.mastodon-streaming.entrypoints: "websecure"
+      traefik.http.routers.mastodon-streaming.tls.certresolver: "letsencrypt"
+      traefik.http.services.mastodon-streaming.loadbalancer.server.port: "4000"
+    depends_on:
+      # - db
+      - redis
+    extra_hosts:
+      # Expose host IP to container by putting host.docker.internal into /etc/hosts
+      host.docker.internal: host-gateway
+
+  sidekiq:
+    image: {{ mastodon_image }}
+    restart: always
+    env_file: /data/mastodon/config
+    command: bundle exec sidekiq
+    depends_on:
+      # - db
+      - redis
+    networks:
+      - external_network
+      - internal_network
+    volumes:
+      # - ./public/system:/mastodon/public/system
+      - system:/mastodon/public/system
+    healthcheck:
+      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 6' || false"]
+    extra_hosts:
+      # Expose host IP to container by putting host.docker.internal into /etc/hosts
+      host.docker.internal: host-gateway
+
+  files-proxy:
+    image: nginx:stable-alpine
+    networks:
+      - {{ mastodon_network }}
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "{{ mastodon_network }}"
+      traefik.http.routers.mastodon-files.rule: "{{ mastodon_files_proxy_traefik_matching_rule }}"
+      traefik.http.routers.mastodon-files.entrypoints: "websecure"
+      traefik.http.routers.mastodon-files.tls.certresolver: "letsencrypt"
+      traefik.http.services.mastodon-files.loadbalancer.server.port: "80"
+    volumes:
+      - /data/mastodon/files-proxy/nginx.conf:/etc/nginx/nginx.conf
+      - files-proxy-cache:/var/cache/nginx
+
+  ## Uncomment to enable federation with tor instances along with adding the following ENV variables
+  ## http_proxy=http://privoxy:8118
+  ## ALLOW_ACCESS_TO_HIDDEN_SERVICE=true
+  # tor:
+  #   image: sirboops/tor
+  #   networks:
+  #      - external_network
+  #      - internal_network
+  #
+  # privoxy:
+  #   image: sirboops/privoxy
+  #   volumes:
+  #     - ./priv-config:/opt/config
+  #   networks:
+  #     - external_network
+  #     - internal_network
+
+volumes:
+  redis:
+  system:
+  files-proxy-cache:
+
+networks:
+  external_network:
+  internal_network:
+    internal: true
+  {{ mastodon_network }}:
+    external: true

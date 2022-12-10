@@ -1,0 +1,7 @@
+galaxy_info:
+  author: Bernhard Bliem
+  description: Ansible role for setting up Mastodon with Docker Compose, Traefik and PostgreSQL on the host
+  license: MIT
+  min_ansible_version: 2.9
+  galaxy_tags: []
+  dependencies: []
