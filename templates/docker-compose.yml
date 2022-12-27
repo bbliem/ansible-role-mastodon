@@ -136,6 +136,7 @@ services:
 
   files-proxy:
     image: nginx:stable-alpine
+    restart: always
     networks:
       - {{ mastodon_network }}
     labels:
