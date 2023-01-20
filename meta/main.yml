@@ -1,7 +1,16 @@
 galaxy_info:
+  role_name: mastodon
+  namespace: bbliem
   author: Bernhard Bliem
   description: Ansible role for setting up Mastodon with Docker Compose, Traefik and PostgreSQL on the host
   license: MIT
-  min_ansible_version: 2.9
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - bionic
+        - focal
+        - jammy
   galaxy_tags: []
-  dependencies: []
+
+dependencies: []
