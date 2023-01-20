@@ -4,54 +4,55 @@
 # TODO: cronjobs for cleanups as described in https://docs.joinmastodon.org/admin/setup/
 
 - name: Create Postgres user
-  become: yes
+  become: true
   become_user: postgres
-  postgresql_user:
+  community.postgresql.postgresql_user:
     name: "{{ mastodon_db_user }}"
     password: "{{ mastodon_db_password }}"
 
 - name: Create database
-  become: yes
+  become: true
   become_user: postgres
-  postgresql_db:
+  community.postgresql.postgresql_db:
     name: "{{ mastodon_db_name }}"
     owner: "{{ mastodon_db_user }}"
 
 - name: Create Mastodon data directory
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
+    mode: 0750
   loop:
     - /data/mastodon
     - /data/mastodon/files-proxy
 
 - name: Copy docker-compose.yml
-  template:
+  ansible.builtin.template:
     src: docker-compose.yml
     dest: /data/mastodon/docker-compose.yml
     mode: 0644
 
 - name: Copy config
-  template:
+  ansible.builtin.template:
     src: config
     dest: /data/mastodon/config
     mode: 0640
   register: _config
 
 - name: Copy files proxy configuration
-  template:
+  ansible.builtin.template:
     src: nginx_files_proxy.conf
     dest: /data/mastodon/files-proxy/nginx.conf
     mode: 0644
   register: _files_proxy_config
 
 - name: Create Docker network
-  docker_network:
+  community.docker.docker_network:
     name: "{{ mastodon_network }}"
     state: present
 
 - name: Start Mastodon stack
-  docker_compose:
+  community.docker.docker_compose:
     project_src: /data/mastodon
     restarted: "{{ (_config is defined and _config.changed) or (_files_proxy_config is defined and _files_proxy_config.changed) }}"
   # notify:

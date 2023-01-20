@@ -1,4 +1,4 @@
 - name: Migrate Mastodon database
-  command: docker-compose run web bundle exec rake db:migrate
+  ansible.builtin.command: docker-compose run web bundle exec rake db:migrate
   args:
     chdir: /data/mastodon
