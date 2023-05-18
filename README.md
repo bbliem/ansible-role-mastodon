@@ -6,7 +6,7 @@ Ansible role for setting up Mastodon with Docker Compose, Traefik and PostgreSQL
 
 ### Docker
 
-- `mastodon_image` [default: `tootsuite/mastodon:v4.0.2`]
+- `mastodon_image` [default: `tootsuite/mastodon:v4.1.2`]
 - `mastodon_network` [default: `mastodon`]
 - `mastodon_files_proxy_traefik_matching_rule` [required]: Example: `"Host(``files.example.com``)"`
 
