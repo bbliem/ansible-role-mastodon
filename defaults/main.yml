@@ -1,4 +1,4 @@
-mastodon_image: tootsuite/mastodon:v4.1.5
+mastodon_image: tootsuite/mastodon:v4.1.6
 mastodon_db_host: host.docker.internal
 mastodon_db_port: 5432
 mastodon_db_name: mastodon
