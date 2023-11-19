@@ -22,6 +22,7 @@ services:
       test: ['CMD', 'redis-cli', 'ping']
     volumes:
       - redis:/data
+    labels: {{ mastodon_redis_container_labels | to_yaml }}
 
   # es:
   #   restart: always
@@ -68,13 +69,7 @@ services:
       test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:3000/health || exit 1']
     # ports:
     #   - '127.0.0.1:3000:3000'
-    labels:
-      traefik.enable: "true"
-      traefik.docker.network: "{{ mastodon_network }}"
-      traefik.http.routers.mastodon-web.rule: "Host(`{{ mastodon_web_domain }}`)"
-      traefik.http.routers.mastodon-web.entrypoints: "websecure"
-      traefik.http.routers.mastodon-web.tls.certresolver: "letsencrypt"
-      traefik.http.services.mastodon-web.loadbalancer.server.port: "3000"
+    labels: {{ mastodon_web_container_labels | to_yaml }}
     extra_hosts:
       # Expose host IP to container by putting host.docker.internal into /etc/hosts
       host.docker.internal: host-gateway
@@ -100,13 +95,7 @@ services:
       test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:4000/api/v1/streaming/health || exit 1']
     ports:
       - '127.0.0.1:4000:4000'
-    labels:
-      traefik.enable: "true"
-      traefik.docker.network: "{{ mastodon_network }}"
-      traefik.http.routers.mastodon-streaming.rule: "Host(`{{ mastodon_web_domain }}`) && PathPrefix(`/api/v1/streaming`)"
-      traefik.http.routers.mastodon-streaming.entrypoints: "websecure"
-      traefik.http.routers.mastodon-streaming.tls.certresolver: "letsencrypt"
-      traefik.http.services.mastodon-streaming.loadbalancer.server.port: "4000"
+    labels: {{ mastodon_streaming_container_labels | to_yaml }}
     depends_on:
       # - db
       - redis
@@ -139,13 +128,7 @@ services:
     restart: always
     networks:
       - {{ mastodon_network }}
-    labels:
-      traefik.enable: "true"
-      traefik.docker.network: "{{ mastodon_network }}"
-      traefik.http.routers.mastodon-files.rule: "{{ mastodon_files_proxy_traefik_matching_rule }}"
-      traefik.http.routers.mastodon-files.entrypoints: "websecure"
-      traefik.http.routers.mastodon-files.tls.certresolver: "letsencrypt"
-      traefik.http.services.mastodon-files.loadbalancer.server.port: "80"
+    labels: {{ mastodon_files_proxy_container_labels | to_yaml }}
     volumes:
       - /data/mastodon/files-proxy/nginx.conf:/etc/nginx/nginx.conf
       - files-proxy-cache:/var/cache/nginx

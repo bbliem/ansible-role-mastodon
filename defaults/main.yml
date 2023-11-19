@@ -10,3 +10,7 @@ mastodon_smtp_auth_method: none
 mastodon_smtp_openssl_verify_mode: none
 mastodon_smtp_login:
 mastodon_smtp_password:
+mastodon_files_proxy_container_extra_labels: {}
+mastodon_redis_container_extra_labels: {}
+mastodon_streaming_container_extra_labels: {}
+mastodon_web_container_extra_labels: {}

@@ -1,0 +1,27 @@
+mastodon_files_proxy_container_base_labels:
+  traefik.enable: "true"
+  traefik.docker.network: "{{ mastodon_network }}"
+  traefik.http.routers.mastodon-files.rule: "{{ mastodon_files_proxy_traefik_matching_rule }}"
+  traefik.http.routers.mastodon-files.entrypoints: "websecure"
+  traefik.http.routers.mastodon-files.tls.certresolver: "letsencrypt"
+  traefik.http.services.mastodon-files.loadbalancer.server.port: "80"
+mastodon_redis_container_base_labels: {}
+mastodon_streaming_container_base_labels:
+  traefik.enable: "true"
+  traefik.docker.network: "{{ mastodon_network }}"
+  traefik.http.routers.mastodon-streaming.rule: "Host(`{{ mastodon_web_domain }}`) && PathPrefix(`/api/v1/streaming`)"
+  traefik.http.routers.mastodon-streaming.entrypoints: "websecure"
+  traefik.http.routers.mastodon-streaming.tls.certresolver: "letsencrypt"
+  traefik.http.services.mastodon-streaming.loadbalancer.server.port: "4000"
+mastodon_web_container_base_labels:
+  traefik.enable: "true"
+  traefik.docker.network: "{{ mastodon_network }}"
+  traefik.http.routers.mastodon-web.rule: "Host(`{{ mastodon_web_domain }}`)"
+  traefik.http.routers.mastodon-web.entrypoints: "websecure"
+  traefik.http.routers.mastodon-web.tls.certresolver: "letsencrypt"
+  traefik.http.services.mastodon-web.loadbalancer.server.port: "3000"
+
+mastodon_web_container_labels: "{{ mastodon_web_container_base_labels | combine(mastodon_web_container_extra_labels) }}"
+mastodon_streaming_container_labels: "{{ mastodon_streaming_container_base_labels | combine(mastodon_streaming_container_extra_labels) }}"
+mastodon_files_proxy_container_labels: "{{ mastodon_files_proxy_container_base_labels | combine(mastodon_files_proxy_container_extra_labels) }}"
+mastodon_redis_container_labels: "{{ mastodon_redis_container_base_labels | combine(mastodon_redis_container_extra_labels) }}"
