@@ -124,7 +124,7 @@ services:
       host.docker.internal: host-gateway
 
   files-proxy:
-    image: nginx:stable-alpine
+    image: nginx:1-alpine
     restart: always
     networks:
       - {{ mastodon_network }}
