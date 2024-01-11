@@ -84,6 +84,9 @@ S3_HOSTNAME={{ mastodon_s3_hostname }}
 S3_REGION={{ mastodon_s3_region }}
 S3_PROTOCOL={{ mastodon_s3_protocol }}
 
+# Try to fix user archive issue as suggested in https://github.com/mastodon/mastodon/issues/18785
+S3_FORCE_SINGLE_REQUEST=true
+
 # IP and session retention
 # -----------------------
 # Make sure to modify the scheduling of ip_cleanup_scheduler in config/sidekiq.yml
