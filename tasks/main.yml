@@ -51,9 +51,14 @@
     name: "{{ mastodon_network }}"
     state: present
 
-- name: Start Mastodon stack
+- name: Restart Mastodon stack if configuration changed
   community.docker.docker_compose_v2:
     project_src: /data/mastodon
-    restarted: "{{ (_config is defined and _config.changed) or (_files_proxy_config is defined and _files_proxy_config.changed) }}"
-  # notify:
-  #   - Migrate Mastodon database
+    state: restarted
+  when: (_config is defined and _config.changed) or (_files_proxy_config is defined and _files_proxy_config.changed)
+
+- name: Ensure Mastodon stack is running
+  community.docker.docker_compose_v2:
+    project_src: /data/mastodon
+    state: present
+  when: not ((_config is defined and _config.changed) or (_files_proxy_config is defined and _files_proxy_config.changed))
