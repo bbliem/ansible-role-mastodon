@@ -52,7 +52,7 @@
     state: present
 
 - name: Start Mastodon stack
-  community.docker.docker_compose:
+  community.docker.docker_compose_v2:
     project_src: /data/mastodon
     restarted: "{{ (_config is defined and _config.changed) or (_files_proxy_config is defined and _files_proxy_config.changed) }}"
   # notify:
