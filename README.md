@@ -42,6 +42,9 @@ Ansible role for setting up Mastodon with Docker Compose, Traefik and PostgreSQL
 
 ### Mastodon
 
+- `mastodon_active_record_encryption_deterministic_key` [required]
+- `mastodon_active_record_encryption_key_derivation_salt` [required]
+- `mastodon_active_record_encryption_primary_key` [required]
 - `mastodon_web_domain` [required]
 - `mastodon_local_domain` [required]
 - `mastodon_secret_key_base` [required]
