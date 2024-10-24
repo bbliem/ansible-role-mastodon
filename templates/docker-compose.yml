@@ -1,4 +1,3 @@
-version: '3'
 services:
   # db:
   #   restart: always
@@ -56,17 +55,17 @@ services:
   #     - '127.0.0.1:9200:9200'
 
   web:
-    image: {{ mastodon_image }}
+    image: {{ mastodon_web_image }}
     restart: always
     env_file: /data/mastodon/config
-    command: bash -c "rm -f /mastodon/tmp/pids/server.pid; bundle exec rails s -p 3000"
+    command: bundle exec puma -C config/puma.rb
     networks:
       - external_network
       - internal_network
       - {{ mastodon_network }}
     healthcheck:
       # prettier-ignore
-      test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:3000/health || exit 1']
+      test: ['CMD-SHELL',"curl -s --noproxy localhost localhost:3000/health | grep -q 'OK' || exit 1"]
     # ports:
     #   - '127.0.0.1:3000:3000'
     labels: {{ mastodon_web_container_labels | to_yaml }}
@@ -82,17 +81,17 @@ services:
       - system:/mastodon/public/system
 
   streaming:
-    image: {{ mastodon_image }}
+    image: {{ mastodon_streaming_image }}
     restart: always
     env_file: /data/mastodon/config
-    command: node ./streaming
+    command: node ./streaming/index.js
     networks:
       - external_network
       - internal_network
       - {{ mastodon_network }}
     healthcheck:
       # prettier-ignore
-      test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:4000/api/v1/streaming/health || exit 1']
+      test: ['CMD-SHELL', "curl -s --noproxy localhost localhost:4000/api/v1/streaming/health | grep -q 'OK' || exit 1"]
     ports:
       - '127.0.0.1:4000:4000'
     labels: {{ mastodon_streaming_container_labels | to_yaml }}
@@ -104,7 +103,7 @@ services:
       host.docker.internal: host-gateway
 
   sidekiq:
-    image: {{ mastodon_image }}
+    image: {{ mastodon_web_image }}
     restart: always
     env_file: /data/mastodon/config
     command: bundle exec sidekiq
@@ -134,7 +133,7 @@ services:
       - files-proxy-cache:/var/cache/nginx
 
   ## Uncomment to enable federation with tor instances along with adding the following ENV variables
-  ## http_proxy=http://privoxy:8118
+  ## http_hidden_proxy=http://privoxy:8118
   ## ALLOW_ACCESS_TO_HIDDEN_SERVICE=true
   # tor:
   #   image: sirboops/tor
