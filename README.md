@@ -8,8 +8,8 @@ Ansible role for setting up Mastodon with Docker Compose, Traefik and PostgreSQL
 
 - `mastodon_network` [default: `mastodon`]
 - `mastodon_files_proxy_traefik_matching_rule` [required]: Example: `"Host(``files.example.com``)"`
-- `mastodon_streaming_image` [default: `tootsuite/mastodon-streaming:v4.3.1`]
-- `mastodon_web_image` [default: `tootsuite/mastodon:v4.3.1`]
+- `mastodon_streaming_image` [default: `tootsuite/mastodon-streaming:v4.3.3`]
+- `mastodon_web_image` [default: `tootsuite/mastodon:v4.3.3`]
 
 ### PostgreSQL
 
