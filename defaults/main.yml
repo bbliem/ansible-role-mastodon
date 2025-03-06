@@ -12,6 +12,6 @@ mastodon_smtp_password:
 mastodon_files_proxy_container_extra_labels: {}
 mastodon_redis_container_extra_labels: {}
 mastodon_streaming_container_extra_labels: {}
-mastodon_streaming_image: tootsuite/mastodon-streaming:v4.3.3
+mastodon_streaming_image: tootsuite/mastodon-streaming:v4.3.4
 mastodon_web_container_extra_labels: {}
-mastodon_web_image: tootsuite/mastodon:v4.3.3
+mastodon_web_image: tootsuite/mastodon:v4.3.4
