@@ -106,6 +106,8 @@ S3_FORCE_SINGLE_REQUEST=true
 IP_RETENTION_PERIOD=172800
 SESSION_RETENTION_PERIOD=31556952
 
+{% if mastodon_deepl_api_key %}
 # DeepL
 DEEPL_API_KEY={{ mastodon_deepl_api_key }}
 DEEPL_PLAN=free
+{% endif %}

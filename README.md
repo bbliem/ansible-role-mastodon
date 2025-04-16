@@ -51,4 +51,4 @@ Ansible role for setting up Mastodon with Docker Compose, Traefik and PostgreSQL
 - `mastodon_otp_secret` [required]
 - `mastodon_vapid_public_key` [required]
 - `mastodon_vapid_private_key` [required]
-- `mastodon_deepl_api_key` [required]
+- `mastodon_deepl_api_key` [default: empty]

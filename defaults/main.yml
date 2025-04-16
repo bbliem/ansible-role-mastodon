@@ -2,6 +2,7 @@ mastodon_db_host: host.docker.internal
 mastodon_db_port: 5432
 mastodon_db_name: mastodon
 mastodon_db_user: mastodon
+mastodon_deepl_api_key:
 mastodon_network: mastodon
 mastodon_smtp_server: host.docker.internal
 mastodon_smtp_port: 587
